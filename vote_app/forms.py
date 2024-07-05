@@ -1,10 +1,7 @@
 from django import forms
 from .models import CustomUser
 from .models import Score
-from django import forms
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm
-from .models import CustomUser
-
 class OTPForm(forms.Form):
     otp = forms.CharField(label='OTP', max_length=6)
 

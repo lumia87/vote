@@ -1,16 +1,12 @@
-from django.contrib.auth import login
+# from django.contrib.auth import login
 from django.shortcuts import render, redirect
-from django.urls import reverse
-from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
-from django.template.loader import render_to_string
-from django.shortcuts import render, redirect, get_object_or_404
+# from django.urls import reverse
+# from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+# from django.template.loader import render_to_string
+from django.shortcuts import get_object_or_404
+
 from django.contrib.auth import authenticate, login
-from django.shortcuts import render, redirect
 from django.contrib.auth.forms import AuthenticationForm
-from django.utils.encoding import (
-    force_bytes,
-    force_str,
-)  
 import urllib.parse
 # Đảm bảo import từ django.utils.encoding
 
@@ -22,7 +18,6 @@ import random
 from datetime import datetime  # Import module datetime
 from pymongo import MongoClient
 
-from django.contrib.sites.shortcuts import get_current_site
 from django.core.mail import send_mail
 from .forms import CustomUserCreationForm, OTPForm
 from .models import CustomUser
@@ -35,6 +30,7 @@ def register(request):
         form = CustomUserCreationForm(request.POST)
         if form.is_valid():
             user = form.save(commit=False)
+            user.is_active = False
             user.otp = generate_otp()
             user.save()
             send_otp_email(user, request)
@@ -44,7 +40,6 @@ def register(request):
     return render(request, 'vote_app/register.html', {'form': form})
 
 def send_otp_email(user, request):
-    current_site = get_current_site(request)
     subject = 'Your OTP Code'
     message = f'Your OTP code is {user.otp}'
     send_mail(subject, message, 'webmaster@localhost', [user.email])
