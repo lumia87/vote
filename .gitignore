@@ -113,7 +113,7 @@ ehthumbs.db
 
 # Heroku
 *.env
-Procfile
+# Procfile
 
 # Editor directories and files
 .vscode/
