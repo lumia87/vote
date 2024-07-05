@@ -1,0 +1,41 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home</title>
+    <link rel="stylesheet" href="{% static 'vote_app/css/home.css' %}">
+</head>
+<body>
+    <div class="container">
+        <h2>Welcome, {{ username }}</h2>
+        
+        <!-- Form to submit scores -->
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit">Submit Score</button>
+        </form>
+
+        <!-- Success and Error messages -->
+        {% if success_message %}
+            <div class="success-message">{{ success_message }}</div>
+        {% endif %}
+        {% if error_message %}
+            <div class="error-message">{{ error_message }}</div>
+        {% endif %}
+
+        <!-- User's scores -->
+        <h3>Your Scores</h3>
+        <ul class="score-list">
+            {% for score in user_scores %}
+                <li>{{ score.score }} (submitted on {{ score.timestamp | date:"Y-m-d H:i:s" }})</li>
+            {% empty %}
+                <li>No scores submitted yet.</li>
+            {% endfor %}
+        </ul>
+    </div>
+</body>
+</html>
