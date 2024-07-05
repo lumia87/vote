@@ -158,3 +158,7 @@ SESSION_COOKIE_NAME = 'sessionid'  # tên cookie
 SESSION_COOKIE_AGE = 1209600  # thời gian sống của session (2 tuần)
 SESSION_SAVE_EVERY_REQUEST = True  # lưu session vào mỗi request
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False  # không hết hạn khi đóng trình duyệt
+
+import django_heroku
+
+django_heroku.settings(locals())
