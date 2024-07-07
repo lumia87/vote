@@ -12,8 +12,14 @@ class RegistrationForm(forms.ModelForm):
 
     class Meta:
         model = CustomUser
-        fields = ['email', 'full_name', 'password1', 'password2']
-
+        fields = ['username', 'email', 'full_name', 'password1', 'password2']
+    
+    def clean_username(self):
+        username = self.cleaned_data['username']
+        if CustomUser.objects.filter(username=username).exists():
+            raise forms.ValidationError("Username already exists. Please choose a different one.")
+        return username
+    
     def clean_password2(self):
         password1 = self.cleaned_data.get("password1")
         password2 = self.cleaned_data.get("password2")
