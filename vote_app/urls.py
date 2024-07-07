@@ -2,8 +2,10 @@ from django.urls import path
 from django.contrib.auth import views as auth_views
 from . import views
 
+app_name = 'vote_app'  # Đặt tên namespace cho ứng dụng
+
 urlpatterns = [
-    path('', views.login_view, name='login'),
+    path('login/', views.login_view, name='login'),
     path('logout/', auth_views.LogoutView.as_view(), name='logout'),
     path('register/', views.register, name='register'),
     path('enter_otp/', views.enter_otp, name='enter_otp'),

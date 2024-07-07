@@ -34,7 +34,7 @@ def register(request):
             user.otp = generate_otp()
             user.save()
             send_otp_email(user, request)
-            return redirect('enter_otp')
+            return redirect('vote_app:enter_otp')
     else:
         form = CustomUserCreationForm()
     return render(request, 'vote_app/register.html', {'form': form})
@@ -56,7 +56,7 @@ def enter_otp(request):
                 user.otp = None
                 user.save()
                 login(request, user)
-                return redirect('home')
+                return redirect('vote_app:home')
             else:
                 form.add_error('otp', 'Invalid OTP')
     else:
@@ -71,7 +71,7 @@ def user_list(request):
 def delete_user(request, user_id):
     user = get_object_or_404(CustomUser, id=user_id)
     user.delete()
-    return redirect('user_list')
+    return redirect('vote_app:user_list')
 
 
 def login_view(request):
@@ -83,7 +83,7 @@ def login_view(request):
             user = authenticate(request, username=username, password=password)
             if user is not None:
                 login(request, user)
-                return redirect('home')  # Chuyển hướng đến trang chủ sau khi đăng nhập thành công
+                return redirect('vote_app:home')  # Chuyển hướng đến trang chủ sau khi đăng nhập thành công
             else:
                 messages.error(request, 'Invalid email or password. Please try again.')
         else:
@@ -140,7 +140,7 @@ def home(request):
                 score.timestamp = timestamp  # Add timestamp to Django model
                 score.save()
 
-                return redirect('home')  # Chuyển hướng lại đến trang home sau khi lưu điểm thành công.
+                return redirect('vote_app:home')  # Chuyển hướng lại đến trang home sau khi lưu điểm thành công.
             
             except Exception as e:
                 error_message = f"Đã xảy ra lỗi khi lưu điểm vào MongoDB: {str(e)}"

@@ -38,7 +38,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'vote_app' #cập nhật 
+    'vote_app', #cập nhật 
+    'vote_app2',
 ]
 
 MIDDLEWARE = [
@@ -144,7 +145,8 @@ EMAIL_HOST_USER = 'tailieu4all@gmail.com'
 EMAIL_HOST_PASSWORD = 'lfes hsvh xudg qaxq'
 
 
-LOGIN_URL = 'login'  # URL name của trang đăng nhập
+LOGIN_URL = '/login/'  # Điều hướng đến trang đăng nhập khi cần thiết
+
 LOGIN_REDIRECT_URL = 'home'  # URL name của trang đích sau khi đăng nhập thành công
 LOGOUT_REDIRECT_URL = 'login'  # URL name của trang đích sau khi đăng xuất
 
