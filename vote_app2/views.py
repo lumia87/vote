@@ -1,6 +1,15 @@
 from django.shortcuts import render, redirect
-from .forms import RegistrationForm, OTPVerificationForm, LoginForm
-from .models import User
+
+from django.shortcuts import render, redirect, get_object_or_404
+
+from .forms import RegistrationForm, OTPVerificationForm, LoginForm, ScoreForm
+from .forms import ContestantForm
+
+from vote_app2.models import Contestant, Score, CustomUser
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
+
 from django.core.mail import send_mail
 from django.contrib.auth import authenticate, login
 
@@ -38,6 +47,7 @@ def send_otp(user):
         [user.email],
         fail_silently=False,
     )
+
 def login_view(request):
     if request.method == 'POST':
         form = LoginForm(request.POST)
@@ -56,4 +66,59 @@ def login_view(request):
 
 @login_required
 def home_view(request):
-    return render(request, 'vote_app2/home.html')
+    if request.method == 'POST':
+        
+        form = ScoreForm(request.POST, user=request.user)
+        if form.is_valid():
+            score = form.cleaned_data['score']
+            contestant = form.cleaned_data['contestant']
+            # user = request.user  # Assume the logged-in user
+
+            # Save the score for the contestant
+            score_obj, created = Score.objects.get_or_create(user=request.user, contestant=contestant, defaults={'score': score})
+            if not created:
+                score_obj.score = score
+                score_obj.save()
+
+            # Refresh contestant list
+            contestants = Contestant.objects.all()
+
+            # Return updated data to the template
+            return render(request, 'vote_app2/home.html', {'form': form, 'contestants': contestants})
+    else:
+        # form = ScoreForm()
+        form = ScoreForm(initial={'user': request.user.pk})  # Initialize form with user pk
+        contestants = Contestant.objects.all()
+
+    return render(request, 'vote_app2/home.html', {'form': form, 'contestants': contestants})
+
+def contestant_list(request):
+    contestants = Contestant.objects.all()
+    return render(request, 'vote_app2/home.html', {'contestants': contestants})
+
+def add_contestant(request):
+    if request.method == 'POST':
+        form = ContestantForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('vote_app2:contestant_list')
+    else:
+        form = ContestantForm()
+    return render(request, 'vote_app2/add_contestant.html', {'form': form})
+
+@login_required
+def rate_contestant(request, contestant_id):
+    contestant = get_object_or_404(Contestant, id=contestant_id)
+    user = request.user  # Giả sử người dùng đã đăng nhập
+    if request.method == 'POST':
+        print(contestant, user)
+        if isinstance(user, User):  # Kiểm tra nếu user là instance của model User
+            score_value = int(request.POST.get('score'))
+            score, created = Score.objects.get_or_create(user=user, contestant=contestant, defaults={'score': score_value})
+            if not created:
+                score.score = score_value
+                score.save()
+            return redirect('vote_app2:contestant_list')
+        else:
+            raise ValueError("The user is not an instance of the User model")
+    return render(request, 'vote_app2/rate_contestant.html', {'contestant': contestant})

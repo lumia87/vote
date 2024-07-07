@@ -1,12 +1,23 @@
-<!-- myapp/templates/myapp/home.html -->
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Home</title>
-</head>
-<body>
-    <h2>Welcome, {{ user.email }}</h2>
-    <p>You have successfully logged in!</p>
-</body>
-</html>
+<!-- home.html -->
+<h2>DANH SÁCH THÍ SINH</h2>
+
+<ul>
+    {% for contestant in contestants %}
+        <li>
+            {{ contestant.full_name }}
+            {% if contestant.score_set.exists %}
+                Điểm: {{ contestant.score_set.first.score }}
+                ({{ contestant.score_set.first.timestamp }})
+            {% else %}
+                - No score available
+            {% endif %}
+        </li>
+    {% endfor %}
+</ul>
+
+<h2>Chấm điểm cho các thí sinh:</h2>
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Submit</button>
+</form>

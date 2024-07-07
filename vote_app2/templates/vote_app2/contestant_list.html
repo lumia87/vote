@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Contestant List</title>
+</head>
+<body>
+    <h2>Contestant List</h2>
+    <ul>
+        {% for contestant in contestants %}
+            <li>
+                {{ contestant.full_name }} - <a href="{% url 'vote_app2:rate_contestant' contestant.id %}">Rate</a>
+            </li>
+        {% endfor %}
+    </ul>
+</body>
+</html>

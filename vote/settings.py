@@ -38,7 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'vote_app', #cập nhật 
+    # 'vote_app', #cập nhật 
     'vote_app2',
 ]
 
@@ -134,8 +134,6 @@ STATICFILES_DIRS = [
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
-AUTH_USER_MODEL = 'vote_app.CustomUser'
-
 #Cập nhật email của backend
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
@@ -150,6 +148,7 @@ LOGIN_URL = '/login/'  # Điều hướng đến trang đăng nhập khi cần t
 LOGIN_REDIRECT_URL = 'home'  # URL name của trang đích sau khi đăng nhập thành công
 LOGOUT_REDIRECT_URL = 'login'  # URL name của trang đích sau khi đăng xuất
 
+AUTH_USER_MODEL = 'vote_app2.CustomUser'  # CustomUser là mô hình người dùng trong vote_app
 
 
 # Session settings

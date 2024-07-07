@@ -1,15 +1,17 @@
 from django import forms
-from .models import User
+from .models import CustomUser
+from .models import Contestant
+from .models import Score
+
 from django.core.exceptions import ValidationError
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.hashers import check_password
-
 class RegistrationForm(forms.ModelForm):
     password1 = forms.CharField(label='Password', widget=forms.PasswordInput)
     password2 = forms.CharField(label='Confirm Password', widget=forms.PasswordInput)
 
     class Meta:
-        model = User
+        model = CustomUser
         fields = ['email', 'full_name', 'password1', 'password2']
 
     def clean_password2(self):
@@ -48,11 +50,42 @@ class LoginForm(forms.Form):
         email = self.cleaned_data.get('email')
         password = self.cleaned_data.get('password')
         try:
-            user = User.objects.get(email=email)
-        except User.DoesNotExist:
+            user = CustomUser.objects.get(email=email)
+        except CustomUser.DoesNotExist:
             raise ValidationError("Invalid email or password")
         if not check_password(password, user.password):
             raise ValidationError("Invalid email or password")
         if not user.is_verified:
             raise ValidationError("Account not verified. Please verify your account.")
         return self.cleaned_data
+
+
+
+class ContestantForm(forms.ModelForm):
+    date_of_birth = forms.DateField(
+    widget=forms.DateInput(attrs={'type': 'date'}),
+    label='Date of Birth'
+    )
+
+    class Meta:
+        model = Contestant
+        fields = ['full_name', 'date_of_birth', 'position']
+
+
+class ScoreForm(forms.ModelForm):
+    class Meta:
+        model = Score
+        fields = ['score', 'user', 'contestant']
+        widgets = {
+            'user': forms.HiddenInput(),  # Hide the user field in the form
+        }
+    def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user', None)
+        super().__init__(*args, **kwargs)
+        if user:
+            self.fields['user'].initial = user.pk  # Set initial value for user field
+    def save(self, commit=True):
+        instance = super().save(commit=False)
+        if commit:
+            instance.save()
+        return instance
