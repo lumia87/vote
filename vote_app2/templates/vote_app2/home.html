@@ -1,23 +1,35 @@
 <!-- home.html -->
-<h2>DANH SÁCH THÍ SINH</h2>
 
-<ul>
-    {% for contestant in contestants %}
-        <li>
-            {{ contestant.full_name }}
-            {% if contestant.score_set.exists %}
-                Điểm: {{ contestant.score_set.first.score }}
-                ({{ contestant.score_set.first.timestamp }})
-            {% else %}
-                - No score available
-            {% endif %}
-        </li>
-    {% endfor %}
-</ul>
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>Điểm thi các thí sinh</title>
+        {% load static %}
+        <link rel="stylesheet" href="{% static 'vote_app2/css/home.css' %}">
+    </head>
+    <body>
+        <h1>Xin chào, {{user}}</h1>
+        <h2>ĐIỂM THI CÁC THÍ SINH</h2>        
 
-<h2>Chấm điểm cho các thí sinh:</h2>
-<form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Submit</button>
-</form>
+        <ul>
+            {% for contestant_id, score_obj in user_scores.items %}
+                <li>
+                    {{ score_obj.contestant.full_name }}
+                    Điểm: {{ score_obj.score }}
+                    ({{user}} chấm lúc: {{ score_obj.timestamp }})
+                </li>
+            {% empty %}
+                <li>- No scores available</li>
+            {% endfor %}
+        </ul>
+        
+
+        <h2>Cập nhật/Chấm điểm cho các thí sinh:</h2>
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit">Submit</button>
+        </form>
+    </body>
+</html>

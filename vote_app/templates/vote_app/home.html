@@ -31,7 +31,7 @@
         <h3>Your Scores</h3>
         <ul class="score-list">
             {% for score in user_scores %}
-                <li>{{ score.score }} (submitted on {{ score.timestamp | date:"Y-m-d H:i:s" }})</li>
+                <li>{{ score.score }} (chấm lúc {{ score.timestamp | date:"Y-m-d H:i:s" }})</li>
             {% empty %}
                 <li>No scores submitted yet.</li>
             {% endfor %}

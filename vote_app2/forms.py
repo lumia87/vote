@@ -1,7 +1,9 @@
 from django import forms
 from .models import CustomUser
 from .models import Contestant
-from .models import Score
+from .models import Score, Assignment
+
+from django.utils import timezone
 
 from django.core.exceptions import ValidationError
 from django.contrib.auth.hashers import make_password
@@ -85,13 +87,29 @@ class ScoreForm(forms.ModelForm):
         widgets = {
             'user': forms.HiddenInput(),  # Hide the user field in the form
         }
-    def __init__(self, *args, **kwargs):
-        user = kwargs.pop('user', None)
+
+    def __init__(self, *args, user=None, assigned_contestants=None, **kwargs):
         super().__init__(*args, **kwargs)
+        self.fields['user'].initial = user.pk if user else None
         if user:
-            self.fields['user'].initial = user.pk  # Set initial value for user field
+            # Get assigned contestants for the current user
+            assigned_contestants = Assignment.objects.filter(user=user).values_list('contestant', flat=True)
+            # Filter contestants by assigned ids
+            self.fields['contestant'].queryset = Contestant.objects.filter(id__in=assigned_contestants)
+        elif (assigned_contestants is not None):
+            self.fields['contestant'].queryset = Contestant.objects.filter(full_name__in=assigned_contestants)    
+
     def save(self, commit=True):
+
         instance = super().save(commit=False)
+        instance.timestamp = timezone.now()  # Update the timestamp to current time
+
         if commit:
             instance.save()
+
         return instance
+    
+
+class AssignContestantsForm(forms.Form):
+    contestant = forms.ModelChoiceField(queryset=Contestant.objects.all(), label="Select Contestant")
+    judges = forms.ModelMultipleChoiceField(queryset=CustomUser.objects.filter(is_staff=True), widget=forms.CheckboxSelectMultiple, label="Select Judges")

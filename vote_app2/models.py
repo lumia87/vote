@@ -65,3 +65,8 @@ class Score(models.Model):
 
     def __str__(self):
         return f"{self.contestant.full_name} - Score: {self.score} - Time: {self.timestamp}"
+
+
+class Assignment(models.Model):
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    contestant = models.ForeignKey(Contestant, on_delete=models.CASCADE)

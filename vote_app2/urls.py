@@ -12,5 +12,6 @@ urlpatterns = [
     path('contestants/', views.contestant_list, name='contestant_list'),
     path('contestants/add/', views.add_contestant, name='add_contestant'),
     path('contestants/<int:contestant_id>/rate/', views.rate_contestant, name='rate_contestant'),
+    path('assign/', views.assign_contestants_to_user, name='assign_contestants'),
 
 ]
