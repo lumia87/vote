@@ -52,11 +52,6 @@ class OTPVerificationForm(forms.Form):
             raise ValidationError("Invalid OTP")
         return otp
 
-class ContestantLoginForm(AuthenticationForm):
-    class Meta:
-        model = Contestant
-        fields = ['username', 'password']
-
 class LoginForm(forms.Form):
     email = forms.EmailField()
     password = forms.CharField(widget=forms.PasswordInput)
@@ -89,29 +84,6 @@ class LoginForm(forms.Form):
 
         # Set the user in the cleaned_data for use in the view
         self.cleaned_data['user'] = user
-        return self.cleaned_data
-
-
-class ContestantLoginForm(forms.Form):
-    email = forms.EmailField()
-    password = forms.CharField(widget=forms.PasswordInput)
-
-    def clean(self):
-        cleaned_data = super().clean()
-        email = cleaned_data.get('email')
-        password = cleaned_data.get('password')
-
-        print('pw theo form contest',password)
-        try:
-            contestant = Contestant.objects.get(email=email)
-            print(contestant.password)
-        except Contestant.DoesNotExist:
-            raise ValidationError("Invalid email")
-        if not check_password(password, contestant.password):
-            raise ValidationError("Invalid password")
-        if not contestant.is_verified:
-            raise ValidationError("Account not verified. Please verify your account.")
-        print(self.cleaned_data)
         return self.cleaned_data
 
 

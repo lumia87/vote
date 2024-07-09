@@ -4,6 +4,7 @@
     <title>Contestant Home</title>
 </head>
 <body>
+    <a href="{%url 'vote_app2:login'%}">Logout</a>
     <h1>Welcome, {{ request.user.full_name }}</h1>
     <h2>Your Scores</h2>
     <table>

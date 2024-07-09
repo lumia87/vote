@@ -3,19 +3,15 @@ from django.shortcuts import render, redirect, get_object_or_404
 
 from .forms import RegistrationForm, OTPVerificationForm, LoginForm, ScoreForm
 from .forms import AssignContestantsForm
-from .forms import ContestantLoginForm
 from vote_app2.backends import ContestantBackend, CustomUserBackend  # Import your backends
 
 from django.contrib.admin.views.decorators import staff_member_required
 
-from vote_app2.models import Contestant, Score, CustomUser
+from vote_app2.models import Contestant, Score
 from django.contrib.auth import get_user_model
 from .models import Contestant, Assignment
-import random
 
-from django.http import HttpResponseRedirect, HttpResponse
 from django.urls import reverse
-from django.contrib import messages
 
 User = get_user_model()
 
@@ -79,7 +75,7 @@ def login_view(request):
                 if custom_user.is_staff:
                     return redirect('vote_app2:view_all_scores')
                 else:
-                    return redirect('vote_app2:home')
+                    return redirect('vote_app2:user_home')
         else:
             form.add_error(None, 'Không đúng email/password')
     else:
@@ -90,7 +86,7 @@ def login_view(request):
 @login_required
 def view_all_scores(request):
     if not request.user.is_staff:
-        return redirect('vote_app2:home')  # Non-staff users should not access this page
+        return redirect('vote_app2:user_home')  # Non-staff users should not access this page
     scores = Score.objects.all().select_related('contestant', 'user')
     return render(request, 'vote_app2/view_all_scores.html', {'scores': scores})
 
@@ -98,7 +94,6 @@ def view_all_scores(request):
 @login_required
 def contestant_home(request):
     contestant = request.user
-    print('đã xác thực hành công, người dùng', contestant)
     if not isinstance(contestant, Contestant):
         return redirect('vote_app2:login')
 
@@ -183,7 +178,7 @@ def assign_contestants_to_user(request):
                 # Check if an assignment already exists
                 if not Assignment.objects.filter(user=judge, contestant=contestant).exists():
                     Assignment.objects.create(user=judge, contestant=contestant)
-            # return redirect('vote_app2:home')  # Replace 'success_url' with the URL to redirect to after successful submission
+            # return redirect('vote_app2:user_home')  # Replace 'success_url' with the URL to redirect to after successful submission
     else:
         form = AssignContestantsForm()
 
