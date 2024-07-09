@@ -2,8 +2,9 @@ from django.contrib.auth.decorators import user_passes_test
 from django.shortcuts import render, redirect, get_object_or_404
 
 from .forms import RegistrationForm, OTPVerificationForm, LoginForm, ScoreForm
-from .forms import ContestantForm
 from .forms import AssignContestantsForm
+from .forms import ContestantLoginForm
+from vote_app2.backends import ContestantBackend, CustomUserBackend  # Import your backends
 
 from django.contrib.admin.views.decorators import staff_member_required
 
@@ -12,8 +13,9 @@ from django.contrib.auth import get_user_model
 from .models import Contestant, Assignment
 import random
 
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, HttpResponse
 from django.urls import reverse
+from django.contrib import messages
 
 User = get_user_model()
 
@@ -55,31 +57,60 @@ def send_otp(user):
         fail_silently=False,
     )
 
+
 def login_view(request):
     if request.method == 'POST':
         form = LoginForm(request.POST)
         if form.is_valid():
             email = form.cleaned_data['email']
             password = form.cleaned_data['password']
-            user = authenticate(request, email=email, password=password)
-            if user is not None:
-                login(request, user)
-                if user.is_staff:
-                    return redirect('vote_app2:assign_contestants')
-                return redirect('vote_app2:home')
 
-            else:
-                form.add_error(None, 'Invalid email or password.')
+            # Attempt login with ContestantBackend
+            contestant_user = ContestantBackend.authenticate(request, email=email, password=password)
+            if contestant_user is not None:
+                login(request, contestant_user, backend='vote_app2.backends.ContestantBackend')
+                return redirect('vote_app2:contestant_home')
+
+            # Attempt login with CustomUserBackend
+            custom_user = CustomUserBackend.authenticate(request, email=email, password=password)
+
+            if custom_user is not None:
+                login(request, custom_user, backend='vote_app2.backends.CustomUserBackend')
+                if custom_user.is_staff:
+                    return redirect('vote_app2:view_all_scores')
+                else:
+                    return redirect('vote_app2:home')
+        else:
+            form.add_error(None, 'Không đúng email/password')
     else:
         form = LoginForm()
+    
     return render(request, 'vote_app2/login.html', {'form': form})
+
+@login_required
+def view_all_scores(request):
+    if not request.user.is_staff:
+        return redirect('vote_app2:home')  # Non-staff users should not access this page
+    scores = Score.objects.all().select_related('contestant', 'user')
+    return render(request, 'vote_app2/view_all_scores.html', {'scores': scores})
+
+
+@login_required
+def contestant_home(request):
+    contestant = request.user
+    print('đã xác thực hành công, người dùng', contestant)
+    if not isinstance(contestant, Contestant):
+        return redirect('vote_app2:login')
+
+    scores = Score.objects.filter(contestant=contestant)
+    return render(request, 'vote_app2/contestant_home.html', {'scores': scores})
 
 @login_required
 def home_view(request):
     user = request.user
     assignments = Assignment.objects.filter(user=user)
     assigned_contestants = [assignment.contestant for assignment in assignments]
-    
+    print(assigned_contestants)
     if request.method == 'POST':
         
         form = ScoreForm(request.POST, user=request.user)
@@ -105,7 +136,8 @@ def home_view(request):
             # Refresh assigned contestants after saving the form
             # assignments = Assignment.objects.filter(user=user)
             # assigned_contestants = [assignment.contestant for assignment in assignments]
-
+        else:
+            print('scoreform not valid')
     else:
         # Fetch assigned contestants again in case of redirect
         form = ScoreForm(initial={'user': request.user.pk}, assigned_contestants=assigned_contestants)  # Initialize form with user pk
@@ -116,24 +148,12 @@ def home_view(request):
         scores = Score.objects.filter(user=user, contestant=contestant)
         user_scores[contestant.id] = scores.last() if scores.exists() else None
 
-    return render(request, 'vote_app2/home.html', {'form': form, 'contestants': assigned_contestants, 'user_scores': user_scores, 'user': user})
+    return render(request, 'vote_app2/user_home.html', {'form': form, 'contestants': assigned_contestants, 'user_scores': user_scores, 'user': user})
 
-def contestant_list(request):
-    contestants = Contestant.objects.all()
-    return render(request, 'vote_app2/home.html', {'contestants': contestants})
 
 def logout(request):
     return redirect(reverse('vote_app2:login'))
 
-def add_contestant(request):
-    if request.method == 'POST':
-        form = ContestantForm(request.POST)
-        if form.is_valid():
-            form.save()
-            return redirect('vote_app2:contestant_list')
-    else:
-        form = ContestantForm()
-    return render(request, 'vote_app2/add_contestant.html', {'form': form})
 
 @login_required
 def rate_contestant(request, contestant_id):

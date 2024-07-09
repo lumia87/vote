@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Contestant Home</title>
+</head>
+<body>
+    <h1>Welcome, {{ request.user.full_name }}</h1>
+    <h2>Your Scores</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Judge</th>
+                <th>Score</th>
+                <th>Time</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for score in scores %}
+                <tr>
+                    <td>{{ score.user.full_name }}</td>
+                    <td>{{ score.score }}</td>
+                    <td>{{ score.timestamp }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>

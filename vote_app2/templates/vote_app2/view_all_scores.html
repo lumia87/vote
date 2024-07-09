@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Điểm thi</title>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <h1>Điểm thi</h1>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Contestant</th>
+                    <th>Judge</th>
+                    <th>Score</th>
+                    <th>Time</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for score in scores %}
+                    <tr>
+                        <td>{{ score.contestant.full_name }}</td>
+                        <td>{{ score.user.full_name }}</td>
+                        <td>{{ score.score }}</td>
+                        <td>{{ score.timestamp }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <a href="{% url 'vote_app2:assign_contestants' %}" class="btn btn-primary">Assign Contestants</a>
+    </div>
+</body>
+</html>

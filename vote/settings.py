@@ -150,6 +150,11 @@ LOGOUT_REDIRECT_URL = 'login'  # URL name của trang đích sau khi đăng xu�
 
 AUTH_USER_MODEL = 'vote_app2.CustomUser'  # CustomUser là mô hình người dùng trong vote_app
 
+AUTHENTICATION_BACKENDS = ( #Backend dùng để xác thực người dùng, đi kèm với file backends.py ở thư mục app
+    'vote_app2.backends.CustomUserBackend',
+    'vote_app2.backends.ContestantBackend',
+    'django.contrib.auth.backends.ModelBackend',
+)
 
 # Session settings
 SESSION_ENGINE = 'django.contrib.sessions.backends.db'  # sử dụng database để lưu session
