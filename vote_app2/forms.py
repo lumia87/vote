@@ -49,6 +49,15 @@ class OTPVerificationForm(forms.Form):
             raise ValidationError("Invalid OTP")
         return otp
 
+class ContestantForm(forms.ModelForm):
+    date_of_birth = forms.DateField(
+    widget=forms.DateInput(attrs={'type': 'date'}),
+    label='Date of Birth'
+    )
+
+    class Meta:
+        model = Contestant
+        fields = ['full_name', 'date_of_birth', 'position']
 
 class LoginForm(forms.Form):
     email = forms.EmailField()
@@ -69,15 +78,6 @@ class LoginForm(forms.Form):
 
 
 
-class ContestantForm(forms.ModelForm):
-    date_of_birth = forms.DateField(
-    widget=forms.DateInput(attrs={'type': 'date'}),
-    label='Date of Birth'
-    )
-
-    class Meta:
-        model = Contestant
-        fields = ['full_name', 'date_of_birth', 'position']
 
 
 class ScoreForm(forms.ModelForm):
@@ -111,5 +111,6 @@ class ScoreForm(forms.ModelForm):
     
 
 class AssignContestantsForm(forms.Form):
-    contestant = forms.ModelChoiceField(queryset=Contestant.objects.all(), label="Select Contestant")
-    judges = forms.ModelMultipleChoiceField(queryset=CustomUser.objects.filter(is_staff=True), widget=forms.CheckboxSelectMultiple, label="Select Judges")
+    contestants = forms.ModelMultipleChoiceField(queryset=Contestant.objects.all(), widget=forms.CheckboxSelectMultiple, label="Thí sinh")
+    #staff để quản trị, khởi tạo ds giám khảo, các user thường mới chấm
+    judge = forms.ModelChoiceField(queryset=CustomUser.objects.filter(is_staff=False), label="Người đánh giá")

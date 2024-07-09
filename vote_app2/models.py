@@ -6,14 +6,17 @@ import random
 from django.contrib.auth.models import BaseUserManager
 
 class CustomUserManager(BaseUserManager):
-    def create_user(self, email, password=None, **extra_fields):
+    def create_user(self, email, password=None, bypass_otp=False, **extra_fields):
         if not email:
             raise ValueError('The Email field must be set')
         email = self.normalize_email(email)
         user = self.model(email=email, **extra_fields)
         user.set_password(password)
+        if bypass_otp:
+            user.is_verified = True  # Assuming bypassing OTP means user is verified
         user.save(using=self._db)
         return user
+
 
     def create_superuser(self, email, password=None, **extra_fields):
         extra_fields.setdefault('is_staff', True)
@@ -27,7 +30,7 @@ class CustomUser(AbstractUser):
     last_login = models.DateTimeField(blank=True, null=True)
     # Add username field with a default value (e.g., empty string)
     username = models.CharField(max_length=150, unique=True, default='')
-    
+
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['full_name']  # List any additional required fields here
 
@@ -40,8 +43,8 @@ class CustomUser(AbstractUser):
         self.otp = str(random.randint(100000, 999999))
         self.save()
 
-    def verify_otp(self, otp):
-        if self.otp == otp:
+    def verify_otp(self, otp, bypass_otp=False):
+        if bypass_otp or self.otp == otp:
             self.otp = None
             self.is_verified = True
             self.save()

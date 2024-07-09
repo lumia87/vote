@@ -2,24 +2,26 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Assign Contestants to Judges</title>
+    <title>PHÂN BỔ DANH SÁCH CHẤM ĐIỂM</title>
 </head>
 <body>
-    <h2>Assign Contestants to Judges</h2>
+    <a href="{% url 'vote_app2:login'%}">Logout</a>
+    <h2>PHÂN CÔNG CHẤM ĐIỂM</h2>
+    
     <form method="post">
         {% csrf_token %}
-        {{ form.as_p }}
+        {{form.as_p}}
         <button type="submit">Submit</button>
     </form>
 
-    <h2>Contestants Assigned</h2>
+    <h2>Đã phân công</h2>
     <ul>
         {% for assignment in assignments %}
-            <li>{{ assignment.contestant.full_name }} - Assigned to {{ assignment.user.username }}</li>
+            <li>{{ assignment.contestant.full_name }} - được chấm bởi {{ assignment.user.username }}</li>
         {% endfor %}
     </ul>
 
-    <h2>Contestants Unassigned</h2>
+    <h2>Chưa phân công</h2>
     <ul>
         {% for contestant in unassigned_contestants %}
             <li>{{ contestant.full_name }}</li>

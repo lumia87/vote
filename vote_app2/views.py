@@ -64,7 +64,10 @@ def login_view(request):
             user = authenticate(request, email=email, password=password)
             if user is not None:
                 login(request, user)
+                if user.is_staff:
+                    return redirect('vote_app2:assign_contestants')
                 return redirect('vote_app2:home')
+
             else:
                 form.add_error(None, 'Invalid email or password.')
     else:
@@ -77,7 +80,6 @@ def home_view(request):
     assignments = Assignment.objects.filter(user=user)
     assigned_contestants = [assignment.contestant for assignment in assignments]
     
-
     if request.method == 'POST':
         
         form = ScoreForm(request.POST, user=request.user)
@@ -120,6 +122,9 @@ def contestant_list(request):
     contestants = Contestant.objects.all()
     return render(request, 'vote_app2/home.html', {'contestants': contestants})
 
+def logout(request):
+    return redirect(reverse('vote_app2:login'))
+
 def add_contestant(request):
     if request.method == 'POST':
         form = ContestantForm(request.POST)
@@ -152,13 +157,13 @@ def assign_contestants_to_user(request):
     if request.method == 'POST':
         form = AssignContestantsForm(request.POST)
         if form.is_valid():
-            contestant = form.cleaned_data['contestant']
-            judges = form.cleaned_data['judges']
-            for judge in judges:
+            contestants = form.cleaned_data['contestants']
+            judge = form.cleaned_data['judge']
+            for contestant in contestants:
                 # Check if an assignment already exists
                 if not Assignment.objects.filter(user=judge, contestant=contestant).exists():
                     Assignment.objects.create(user=judge, contestant=contestant)
-            return redirect('vote_app2:home')  # Replace 'success_url' with the URL to redirect to after successful submission
+            # return redirect('vote_app2:home')  # Replace 'success_url' with the URL to redirect to after successful submission
     else:
         form = AssignContestantsForm()
 
