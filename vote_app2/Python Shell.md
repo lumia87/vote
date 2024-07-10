@@ -12,8 +12,7 @@ contestants = Contestant.objects.all()
 print(contestants)
 contestants.delete()
 
-python manage.py dbshell
-DROP TABLE vote_app2_contestant;
+
 
 # Xoa tat ca du lieu trong sqlite3
 python manage.py flush
@@ -55,12 +54,11 @@ ts2=Contestant.objects.get(email='ts2@gmail.com')
 ts2.set_password('888889')  # Sử dụng set_password để hash mật khẩu
 
 Khi tao bang cach tren thi khong dang nhap thanh cong
-python manage.py shell
-from datetime import date
-from vote_app2.models import Contestant  # Thay thế 'vote_app2' bằng tên ứng dụng của bạn
+
 ts1=Contestant.objects.create_contestant(full_name='ts1', date_of_birth=date(1990, 5, 15),email='ts1@gmail.com', password='888889', bypass_otp=True) 
 ts2=Contestant.objects.create_contestant(full_name='ts2', date_of_birth=date(1990, 5, 15),email='ts2@gmail.com', password='888889', bypass_otp=True) 
 ts3=Contestant.objects.create_contestant(full_name='ts3', date_of_birth=date(1990, 5, 15),email='ts3@gmail.com', password='888889', bypass_otp=True) 
+
 
 # Lưu instance vào cơ sở dữ liệu
 ts1.save()
@@ -73,6 +71,7 @@ ts1.set_password('888889')  # Sử dụng set_password để hash mật khẩu
 
 # Xoa cac Contestant
 from vote_app2.models import Contestant  # Thay thế 'vote_app2' bằng tên ứng dụng của bạn
+
 Contestant.objects.all().delete()
 
 # Lay 1 phan tu
@@ -148,3 +147,84 @@ Xem danh sách migrations đã áp dụng: **python manage.py showmigrations**
 Xóa migration không cần thiết: **python manage.py migrate vote_app2 zero**
 Tạo migration: **python manage.py makemigrations vote_app2**
 Áp dụng migration: **python manage.py migrate**
+
+# tao filter cho template
+
+
+To create a custom template filter in Django for converting a timestamp to local time, you can follow these steps:
+
+Create a custom template filter file:
+
+Create a directory for your custom template tags (if you don’t have one already) inside your Django app, for example, templatetags.
+Create a Python file inside this directory, e.g., custom_filters.py.
+Register your custom filter:
+
+Add the custom filter to your custom_filters.py file.
+Load and use your custom filter in templates.
+
+Here’s how you can implement these steps:
+
+Step 1: Create the templatetags directory and custom_filters.py file
+Assuming your app is named vote_app2:
+
+bash
+Sao chép mã
+mkdir vote_app2/templatetags
+touch vote_app2/templatetags/custom_filters.py
+touch vote_app2/templatetags/__init__.py
+Step 2: Add the custom filter to custom_filters.py
+Edit vote_app2/templatetags/custom_filters.py:
+
+python
+Sao chép mã
+from django import template
+from django.utils import timezone
+
+register = template.Library()
+
+@register.filter
+def localtime(value):
+    """Convert a datetime object to local time."""
+    if value is None:
+        return ''
+    return timezone.localtime(value)
+Step 3: Load and use your custom filter in templates
+In your Django template, load the custom filter and use it to convert the timestamp to local time:
+
+django
+Sao chép mã
+{% load custom_filters %}
+
+{{ score.timestamp|localtime }}
+
+## CACH TEST FILTER 
+
+python manage.py shell
+from django.template import Template, Context
+from vote_app2.templatetags.custom_filters import floatdiv
+result = floatdiv(10, 0)
+print(result)  # Kết quả phụ thuộc vào xử lý ngoại lệ trong floatdiv
+result = floatdiv(5, 3)
+print(result)  # Kết quả phụ thuộc vào xử lý ngoại lệ trong floatdiv
+# Assume total_score and count are defined
+total_score = 100
+score_value=1
+count = 5
+
+# Create a Context object with necessary variables
+context = Context({'total_score': total_score, 'score_value':score_value})
+
+# Define the template string containing {% with %} statement
+template_str = """
+{% with total_score=total_score|add:score_value %}
+    {{ total_score }}
+{% endwith %}
+"""
+
+# Compile the template
+template = Template(template_str)
+
+# Render the template with context
+rendered_template = template.render(context)
+
+print(rendered_template)

@@ -1,3 +1,5 @@
+{% load custom_filters %}
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -5,31 +7,48 @@
     <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
-    
     <div class="container">
         <h1>Điểm thi</h1>
-        <a href="{%url 'vote_app2:login'%}">Logout</a>
+        <a href="{% url 'vote_app2:login' %}">Logout</a>
         <table class="table table-striped">
             <thead>
                 <tr>
-                    <th>Contestant</th>
-                    <th>Judge</th>
-                    <th>Score</th>
-                    <th>Time</th>
+                    <th>Thí sinh</th>
+                    {% for judge in judges %}
+                        <th>{{ judge.full_name }}</th>
+                    {% endfor %}
+                    <th>Điểm trung bình</th>
                 </tr>
             </thead>
             <tbody>
-                {% for score in scores %}
+                {% for contestant in contestants %}
                     <tr>
-                        <td>{{ score.contestant.full_name }}</td>
-                        <td>{{ score.user.full_name }}</td>
-                        <td>{{ score.score }}</td>
-                        <td>{{ score.timestamp }}</td>
+                        <td>{{ contestant.full_name }}</td>
+                        {% for judge in judges %}
+                            {% with score_value=scores_dict|get_item:contestant|get_item:judge %}
+                                <td>
+                                    {% if score_value %}
+                                        {{ score_value }}
+                                    {% else %}
+                                        N/A
+                                    {% endif %}
+                                </td>
+                            {% endwith %}
+                        {% endfor %}
+                        <td>
+                            {% with average_score=scores_dict|get_item:contestant|get_item:'average_score' %}
+                                {% if average_score %}
+                                    {{ average_score }}
+                                {% else %}
+                                    N/A
+                                {% endif %}
+                            {% endwith %}
+                        </td>
                     </tr>
                 {% endfor %}
             </tbody>
         </table>
-        <a href="{% url 'vote_app2:assign_contestants' %}" class="btn btn-primary">Assign Contestants</a>
+        <a href="{% url 'vote_app2:assign_contestants' %}" class="btn btn-primary">Phân công chấm điểm</a>
     </div>
 </body>
 </html>

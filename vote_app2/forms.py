@@ -11,6 +11,7 @@ from django.contrib.auth import authenticate
 
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.hashers import check_password
+
 class RegistrationForm(forms.ModelForm):
     password1 = forms.CharField(label='Password', widget=forms.PasswordInput)
     password2 = forms.CharField(label='Confirm Password', widget=forms.PasswordInput)
@@ -22,14 +23,14 @@ class RegistrationForm(forms.ModelForm):
     def clean_username(self):
         username = self.cleaned_data['username']
         if CustomUser.objects.filter(username=username).exists():
-            raise forms.ValidationError("Username already exists. Please choose a different one.")
+            raise forms.ValidationError("Username đã có, chọn tên khác...")
         return username
     
     def clean_password2(self):
         password1 = self.cleaned_data.get("password1")
         password2 = self.cleaned_data.get("password2")
         if password1 and password2 and password1 != password2:
-            raise ValidationError("Passwords don't match")
+            raise ValidationError("Passwords không khớp")
         return password2
 
     def save(self, commit=True):
@@ -72,15 +73,15 @@ class LoginForm(forms.Form):
             try:
                 user = Contestant.objects.get(email=email)
             except Contestant.DoesNotExist:
-                raise ValidationError("Invalid email or password")
+                raise ValidationError("Không đúng email")
 
         # Check password
         if not check_password(password, user.password):
-            raise ValidationError("Invalid email or password")
+            raise ValidationError("Không đúng password")
 
         # Check if the user is verified
         if not user.is_verified:
-            raise ValidationError("Account not verified. Please verify your account.")
+            raise ValidationError("Tài khoản chưa được xác thực")
 
         # Set the user in the cleaned_data for use in the view
         self.cleaned_data['user'] = user
@@ -101,7 +102,6 @@ class ScoreForm(forms.ModelForm):
         if user:
             # Get assigned contestants for the current user
             assigned_contestants = Assignment.objects.filter(user=user).values_list('contestant', flat=True) #tra ve list IDs of the contestants gan voi user cu the. 
-            print(assigned_contestants)
             # Filter contestants by assigned ids
             self.fields['contestant'].queryset = Contestant.objects.filter(id__in=assigned_contestants) #loc cac id trong contestant cho scoreform
         elif (assigned_contestants is not None):

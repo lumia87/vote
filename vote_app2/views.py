@@ -7,9 +7,10 @@ from vote_app2.backends import ContestantBackend, CustomUserBackend  # Import yo
 
 from django.contrib.admin.views.decorators import staff_member_required
 
-from vote_app2.models import Contestant, Score
+from vote_app2.models import Contestant, CustomUser, Score
 from django.contrib.auth import get_user_model
 from .models import Contestant, Assignment
+import datetime
 
 from django.urls import reverse
 
@@ -76,20 +77,46 @@ def login_view(request):
                     return redirect('vote_app2:view_all_scores')
                 else:
                     return redirect('vote_app2:user_home')
-        else:
-            form.add_error(None, 'Không đúng email/password')
+        # else:
+        #     form.add_error(None, 'Không đúng email/password')
     else:
         form = LoginForm()
-    
     return render(request, 'vote_app2/login.html', {'form': form})
 
 @login_required
 def view_all_scores(request):
     if not request.user.is_staff:
         return redirect('vote_app2:user_home')  # Non-staff users should not access this page
-    scores = Score.objects.all().select_related('contestant', 'user')
-    return render(request, 'vote_app2/view_all_scores.html', {'scores': scores})
-
+    
+    contestants = Contestant.objects.all()
+    judges = CustomUser.objects.filter(is_staff=False)  # Only staff users are considered as judges
+    
+    scores = Score.objects.all()
+    
+    # Create a dictionary to store the scores
+    scores_dict = {}
+    for contestant in contestants:
+        scores_dict[contestant] = {judge: None for judge in judges}
+    
+    # Populate the dictionary with the scores
+    for score in scores:
+        scores_dict[score.contestant][score.user] = score.score
+    
+    # Calculate average scores for each contestant
+    for contestant, judge_scores in scores_dict.items():
+        total_score = sum(filter(None, judge_scores.values()))
+        num_scores = len([score for score in judge_scores.values() if score is not None])
+        if num_scores > 0:
+            average_score = total_score / num_scores
+        else:
+            average_score = 0  # Handle case where no scores are available
+        scores_dict[contestant]['average_score'] = average_score
+    
+    return render(request, 'vote_app2/view_all_scores.html', {
+        'contestants': contestants,
+        'judges': judges,
+        'scores_dict': scores_dict
+    })
 
 @login_required
 def contestant_home(request):
@@ -120,7 +147,7 @@ def home_view(request):
             scores = Score.objects.filter(user=user, contestant=contestant)
 
             if scores.exists():
-                # Update the first found score object
+                # Cập nhật điểm thi mới nhất tìm thấy (trong ds các điểm của người chấm - thí sinh)
                 score_obj = scores.first()
                 score_obj.score = score
                 score_obj.save()
@@ -128,11 +155,6 @@ def home_view(request):
                 # Create a new score object if none exists
                 Score.objects.create(user=user, contestant=contestant, score=score)
 
-            # Refresh assigned contestants after saving the form
-            # assignments = Assignment.objects.filter(user=user)
-            # assigned_contestants = [assignment.contestant for assignment in assignments]
-        else:
-            print('scoreform not valid')
     else:
         # Fetch assigned contestants again in case of redirect
         form = ScoreForm(initial={'user': request.user.pk}, assigned_contestants=assigned_contestants)  # Initialize form with user pk
